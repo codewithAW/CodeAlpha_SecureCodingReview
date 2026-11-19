@@ -1,0 +1,9 @@
+test_admin_boundary (__main__.Controls.test_admin_boundary) ... ok
+test_display_validation (__main__.Controls.test_display_validation) ... ok
+test_owner_boundary (__main__.Controls.test_owner_boundary) ... ok
+test_profile_projection (__main__.Controls.test_profile_projection) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.009s
+
+OK

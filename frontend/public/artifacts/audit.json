@@ -1,0 +1,106 @@
+{
+  "date": "2026-11-18T02:38:59.294735+00:00",
+  "sha256": "2cbbd4bbf3809cdf71aede2fa9363c619e68f2da1a60ac296db63bd7592da62e",
+  "findings": [
+    {
+      "id": "CG-001",
+      "title": "Owner check missing",
+      "severity": "High",
+      "cwe": 639,
+      "owasp": "A01",
+      "area": "Record detail",
+      "impact": "An authenticated member could receive another member’s record.",
+      "fix": "Scope the database lookup to the current user.",
+      "before": "row = db().execute(\"SELECT id,title FROM records WHERE id=?\", (key,)).fetchone()",
+      "after": "        row = db().execute(\"SELECT id,title FROM records WHERE id=? AND owner=?\",\n                           (key, session[\"uid\"])).fetchone()\n        if row is None:",
+      "source": "backend/app.py:115–117",
+      "baseline": "audit/baseline.txt:4–4",
+      "test": "test_owner_boundary",
+      "status": "Verified",
+      "method": "Manual review"
+    },
+    {
+      "id": "CG-002",
+      "title": "Private fields in profile response",
+      "severity": "High",
+      "cwe": 200,
+      "owasp": "A01",
+      "area": "Profile response",
+      "impact": "Returning the full user row would disclose a stored password verifier to the signed-in user.",
+      "fix": "Select the two public profile fields explicitly.",
+      "before": "row = db().execute(\"SELECT * FROM users WHERE id=?\", (session[\"uid\"],)).fetchone()\nreturn jsonify(dict(row))",
+      "after": "        row = db().execute(\"SELECT display, role FROM users WHERE id=?\", (session[\"uid\"],)).fetchone()\n        return jsonify(dict(row))\n",
+      "source": "backend/app.py:99–101",
+      "baseline": "audit/baseline.txt:6–7",
+      "test": "test_profile_projection",
+      "status": "Verified",
+      "method": "Manual review"
+    },
+    {
+      "id": "CG-003",
+      "title": "Unbounded profile display name",
+      "severity": "Medium",
+      "cwe": 20,
+      "owasp": "A04",
+      "area": "Profile update",
+      "impact": "Whitespace or oversized names could enter persistent records and disrupt profile rendering.",
+      "fix": "Validate type and trimmed length before writing.",
+      "before": "display = body()[\"display\"]\ndb().execute(\"UPDATE users SET display=? WHERE id=?\", (display, session[\"uid\"]))",
+      "after": "            if not isinstance(display, str) or not 1 <= len(display.strip()) <= 80:\n                abort(400)\n            db().execute(\"UPDATE users SET display=? WHERE id=?\", (display.strip(), session[\"uid\"]))",
+      "source": "backend/app.py:95–97",
+      "baseline": "audit/baseline.txt:9–10",
+      "test": "test_display_validation",
+      "status": "Verified",
+      "method": "Manual review"
+    },
+    {
+      "id": "CG-004",
+      "title": "Missing administrator check",
+      "severity": "Medium",
+      "cwe": 862,
+      "owasp": "A01",
+      "area": "Administrative summary",
+      "impact": "Any authenticated account could read a restricted aggregate count.",
+      "fix": "Read the role from the database and deny unauthorized access.",
+      "before": "return jsonify(records=db().execute(\"SELECT count(*) FROM records\").fetchone()[0])",
+      "after": "        if role[\"role\"] != \"admin\":\n            abort(403)\n        return jsonify(records=db().execute(\"SELECT count(*) FROM records\").fetchone()[0])",
+      "source": "backend/app.py:125–127",
+      "baseline": "audit/baseline.txt:12–12",
+      "test": "test_admin_boundary",
+      "status": "Verified",
+      "method": "Manual review"
+    }
+  ],
+  "handlerPassed": [
+    "test_admin_boundary",
+    "test_display_validation",
+    "test_owner_boundary",
+    "test_profile_projection"
+  ],
+  "checks": [
+    "Owner-scoped detail lookup",
+    "Explicit profile response columns",
+    "Owner-scoped literal search"
+  ],
+  "passed": [],
+  "tools": {
+    "pytest": {
+      "version": null,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "C:\\Python314\\python.exe: No module named pytest\n"
+    },
+    "bandit": {
+      "version": null,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "C:\\Python314\\python.exe: No module named bandit\n"
+    },
+    "pip-audit": {
+      "version": null,
+      "exit": 1,
+      "stdout": "",
+      "stderr": "C:\\Python314\\python.exe: No module named pip_audit\n"
+    }
+  }
+}

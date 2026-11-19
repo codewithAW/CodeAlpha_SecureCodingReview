@@ -1,0 +1,6 @@
+{
+  "version": null,
+  "exit": 1,
+  "stdout": "",
+  "stderr": "C:\\Python314\\python.exe: No module named pytest\n"
+}

@@ -1,0 +1,12 @@
+# Isolated review excerpts from the fictional initial design.
+# Each excerpt represents the body of the named handler, with an authenticated session.
+[record]
+row = db().execute("SELECT id,title FROM records WHERE id=?", (key,)).fetchone()
+[profile]
+row = db().execute("SELECT * FROM users WHERE id=?", (session["uid"],)).fetchone()
+return jsonify(dict(row))
+[display]
+display = body()["display"]
+db().execute("UPDATE users SET display=? WHERE id=?", (display, session["uid"]))
+[admin]
+return jsonify(records=db().execute("SELECT count(*) FROM records").fetchone()[0])
